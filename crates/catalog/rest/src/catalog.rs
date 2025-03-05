@@ -298,6 +298,9 @@ impl RestCatalog {
             None => None,
         };
 
+        println!("warehouse_path: {:?}", &warehouse_path);
+        println!("metadata_location: {:?}", &metadata_location);
+
         let file_io = match warehouse_path.or(metadata_location) {
             Some(url) => FileIO::from_path(url)?.with_props(props).build()?,
             None => {
@@ -674,8 +677,11 @@ impl Catalog for RestCatalog {
             .context()
             .await?
             .client
-            .query::<CommitTableResponse, ErrorResponse>(request)
+            .query::<CommitTableResponse, ErrorResponse>(request.try_clone().unwrap())
             .await?;
+
+        println!("CommitTableRequest: {:?}", request);
+        println!("CommitTableResponse: {:?}", &resp);
 
         let file_io = self
             .load_file_io(Some(&resp.metadata_location), None)
